@@ -21,6 +21,7 @@ class AlienInvasion:
         """Start the main loop for the game."""
         while True:
             self._check_events()
+            self.ship.update()
             self._update_screen()
             self.clock.tick(60)
     
@@ -31,8 +32,11 @@ class AlienInvasion:
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
-                    #Move ship to up
-                    self.ship.rect.y -= 1
+                    self.ship.moving_right = True
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_UP:
+                    self.ship.moving_right = False
+                
 
     def _update_screen(self):
         # Update images on the screeen, and flipto the new screen
