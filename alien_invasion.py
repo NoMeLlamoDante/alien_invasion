@@ -93,17 +93,22 @@ class AlienInvasion:
         # Make a ufo and keep adding ufos until there's no room left.
         # Space between ufo is one ufo height.
         ufo = Ufo(self)
-        ufo_height = ufo.rect.height
-        current_y = ufo_height
-        
-        while current_y < (self.settings.screen_height-2 * ufo_height):
-            self._create_ufo(current_y)
-            current_y += 2 * ufo_height
+        ufo_width, ufo_height = ufo.rect.size
+        current_x,  current_y = self.settings.screen_width-ufo_width, ufo_height
+        while current_x > (5 * ufo_width):
+            while current_y < (self.settings.screen_height - 2 * ufo_height):
+                self._create_ufo(current_x, current_y)
+                current_y += 2 * ufo_height
+            # Finished a column; reset y value, and increment x value.
+            current_y = ufo_height
+            current_x -= 1.5 * ufo_width
             
-    def _create_ufo(self, y_position):
+    def _create_ufo(self, x_position, y_position):
+        """Create a Ufo and place it in the row"""
         new_ufo = Ufo(self)
         new_ufo.y = y_position
         new_ufo.rect.y = y_position
+        new_ufo.rect.x = x_position
         self.Ufos.add(new_ufo)
     
     def _update_screen(self):
