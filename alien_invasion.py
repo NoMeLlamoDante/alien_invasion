@@ -1,7 +1,10 @@
 import sys
+from time import sleep
+
 import pygame
 
 from settings import Settings
+from game_stats import GameStats
 from ship import Ship
 from bullet import Bullet
 from ufo import Ufo
@@ -15,6 +18,8 @@ class AlienInvasion:
         pygame.init()
         self.clock = pygame.time.Clock()
         self.settings = Settings()
+        
+        # Screen settings
         # activate full screen
         # self.screen = pygame.display.set_mode((0,0),pygame.FULLSCREEN)
         self.screen = pygame.display.set_mode(
@@ -22,9 +27,15 @@ class AlienInvasion:
         self.settings.screen_width = self.screen.get_rect().width
         self.settings.screen_height = self.screen.get_rect().height
         pygame.display.set_caption("Alien Invasion")
+        
+        #Create an instance to store game statistics.
+        self.stats = GameStats(self)
+        
+        #Items
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
         self.ufos = pygame.sprite.Group()
+        
         self.clouds = pygame.sprite.Group()
         self._create_fleet()
         
@@ -94,29 +105,45 @@ class AlienInvasion:
             if cloud.rect.x <= 0 - cloud.rect.width:
                 self.clouds.remove(cloud)
     
+    # Ship
+    def _shit_hit(self):
+        """Respond to the ship being hit by a ufo"""
+        # Decrement ships_left
+        self.stats.ships_left -= 1
+        # Get rid of any remaining bullets and ufos.
+        self.bullets.empty()
+        self.ufos.empty()
+        
+        # Create a new fleet and center the ship.
+        self._create_fleet()
+        self.ship.center_ship()
+        
+        # Pause
+        sleep(0.5)
+    
     # Bullets
     def _fire_bullet(self):
         """Create a new bullet and add it to the bullet group."""
         if len(self.bullets) < self.settings.bullet_allowed:
             new_bullet = Bullet(self)
             self.bullets.add(new_bullet)
-        print(len(self.bullets))
     
     def _update_bullets(self):
         """Update position of bullets and get rid of old bullets."""
         #Update bullets positions.
         self.bullets.update()
-        
         #Get rid of bullet that have disappeared
         for bullet in self.bullets.copy():
             if bullet.rect.x >= self.settings.screen_width:
                 self.bullets.remove(bullet)
         
-        # Check for any bullets that have hit ufo
-        # If so, get rid of the bullet and the ufo
+        self._check_bullet_ufo_collision()
+    
+    def _check_bullet_ufo_collision(self):
+        """Respot to bullet-alien_collision. """
+        # Remove any bullets and ufo that have collided.
         collisions = pygame.sprite.groupcollide(
             self.bullets, self.ufos,True, True)
-        
         if not self.ufos:
             # Destroy existing bullets and create new fleet.
             self.bullets.empty()
@@ -149,7 +176,15 @@ class AlienInvasion:
     def _update_ufo(self):
         """Check if the fleet is at an edge, then update positions"""
         self._check_fleet_edges()
+        
         self.ufos.update()
+        
+        # Look for ufo-ship collisions.
+        if pygame.sprite.spritecollideany(self.ship, self.ufos):
+            self._shit_hit()
+
+        #Look for ufo hitting the left of the screen
+        self._check_ufos_left()
     
     def _check_fleet_edges(self):
         """Respond appropriately if any ufo have reached an edge."""
@@ -163,6 +198,14 @@ class AlienInvasion:
         for ufo in self.ufos.sprites():
             ufo.rect.x -= self.settings.fleet_drop_speed
         self.settings.fleet_direction *= -1
+    
+    def _check_ufos_left(self):
+        """Check if any ufo have reached the bottom of the screen."""
+        for ufo in self.ufos.sprites():
+            if ufo.rect.left <= 0:
+                # Treat this the same as if the ship got hit.
+                self._shit_hit()
+                break
     
     # Screen
     def _update_screen(self):
