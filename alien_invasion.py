@@ -39,6 +39,7 @@ class AlienInvasion:
             self._update_screen()
             self.clock.tick(60)
     
+    # Events
     def _check_events(self):
         # Respond to keypresses and mouse events.
         for event in pygame.event.get():
@@ -135,9 +136,24 @@ class AlienInvasion:
         self.ufos.add(new_ufo)
     
     def _update_ufo(self):
-        """Update the position of all aliens in the fleet."""
+        """Check if the fleet is at an edge, then update positions"""
+        self._check_fleet_edges()
         self.ufos.update()
     
+    def _check_fleet_edges(self):
+        """Respond appropriately if any ufo have reached an edge."""
+        for ufo in self.ufos.sprites():
+            if ufo.check_edges():
+                self._change_fleet_direction()
+                break
+    
+    def _change_fleet_direction(self):
+        """Drop the entire fleet and change the fleet's direction."""
+        for ufo in self.ufos.sprites():
+            ufo.rect.x -= self.settings.fleet_drop_speed
+        self.settings.fleet_direction *= -1
+    
+    # Screen
     def _update_screen(self):
         # Update images on the screen, and flipto the new screen
         self.screen.fill(self.settings.bg_color)
