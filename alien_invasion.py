@@ -24,7 +24,7 @@ class AlienInvasion:
         pygame.display.set_caption("Alien Invasion")
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
-        self.Ufos = pygame.sprite.Group()
+        self.ufos = pygame.sprite.Group()
         self.clouds = pygame.sprite.Group()
         self._create_fleet()
         
@@ -32,9 +32,9 @@ class AlienInvasion:
         """Start the main loop for the game."""
         while True:
             self._check_events()
-            self._generate_clouds()
             self._update_clouds()
             self.ship.update()
+            self._update_ufo()
             self._update_bullets()
             self._update_screen()
             self.clock.tick(60)
@@ -76,6 +76,7 @@ class AlienInvasion:
         elif event.key == pygame.K_DOWN:
             self.ship.moving_down = False
 
+    # Clouds
     def _generate_clouds(self):
         """Create a cloud and place it"""
         if len(self.clouds) < self.settings.cloud_limit:
@@ -84,6 +85,7 @@ class AlienInvasion:
     
     def _update_clouds(self):
         """Update position of clouds and get rid of old clouds"""
+        self._generate_clouds()
         #Update Clouds position
         self.clouds.update()
         #Get rid of clouds that have disappeared
@@ -91,6 +93,7 @@ class AlienInvasion:
             if cloud.rect.x <= 0 - cloud.rect.width:
                 self.clouds.remove(cloud)
     
+    # Bullets
     def _fire_bullet(self):
         """Create a new bullet and add it to the bullet group."""
         if len(self.bullets) < self.settings.bullet_allowed:
@@ -107,6 +110,7 @@ class AlienInvasion:
             if bullet.rect.x >= self.settings.screen_width:
                 self.bullets.remove(bullet)
     
+    # Ufos
     def _create_fleet(self):
         """Create the fleet of aliens."""
         # Make a ufo and keep adding ufos until there's no room left.
@@ -128,7 +132,11 @@ class AlienInvasion:
         new_ufo.y = y_position
         new_ufo.rect.y = y_position
         new_ufo.rect.x = x_position
-        self.Ufos.add(new_ufo)
+        self.ufos.add(new_ufo)
+    
+    def _update_ufo(self):
+        """Update the position of all aliens in the fleet."""
+        self.ufos.update()
     
     def _update_screen(self):
         # Update images on the screen, and flipto the new screen
@@ -138,7 +146,7 @@ class AlienInvasion:
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         self.ship.blitme()
-        self.Ufos.draw(self.screen)
+        self.ufos.draw(self.screen)
         
         pygame.display.flip()
 

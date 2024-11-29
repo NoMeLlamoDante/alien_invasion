@@ -21,3 +21,6 @@ class Settings:
         #Cloud Settings
         self.cloud_speed = 15.0
         self.cloud_limit = 5
+        
+        #Ufo settings
+        self.ufo_speed = 1.0
