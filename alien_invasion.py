@@ -106,10 +106,21 @@ class AlienInvasion:
         """Update position of bullets and get rid of old bullets."""
         #Update bullets positions.
         self.bullets.update()
+        
         #Get rid of bullet that have disappeared
         for bullet in self.bullets.copy():
             if bullet.rect.x >= self.settings.screen_width:
                 self.bullets.remove(bullet)
+        
+        # Check for any bullets that have hit ufo
+        # If so, get rid of the bullet and the ufo
+        collisions = pygame.sprite.groupcollide(
+            self.bullets, self.ufos,True, True)
+        
+        if not self.ufos:
+            # Destroy existing bullets and create new fleet.
+            self.bullets.empty()
+            self._create_fleet()
     
     # Ufos
     def _create_fleet(self):
