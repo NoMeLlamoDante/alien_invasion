@@ -9,7 +9,6 @@ class Ufo(Sprite):
         super().__init__()
         self.screen = ai_game.screen
         
-        
         #Load the alien image and set its rect attribute.
         self.image = pygame.image.load("images/ufo_basic.bmp")
         
@@ -22,3 +21,5 @@ class Ufo(Sprite):
         
         #Store the alien's exact horizontal position
         self.x = float(self.rect.x)
+
+    

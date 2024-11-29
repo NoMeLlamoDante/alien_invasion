@@ -5,6 +5,7 @@ from settings import Settings
 from ship import Ship
 from bullet import Bullet
 from ufo import Ufo
+from cloud import Cloud
 
 class AlienInvasion:
     """Overall class to manage game assets and behavior."""
@@ -24,13 +25,15 @@ class AlienInvasion:
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
         self.Ufos = pygame.sprite.Group()
-        
+        self.clouds = pygame.sprite.Group()
         self._create_fleet()
         
     def run_game(self):
         """Start the main loop for the game."""
         while True:
             self._check_events()
+            self._generate_clouds()
+            self._update_clouds()
             self.ship.update()
             self._update_bullets()
             self._update_screen()
@@ -72,12 +75,28 @@ class AlienInvasion:
             self.ship.moving_up = False
         elif event.key == pygame.K_DOWN:
             self.ship.moving_down = False
+
+    def _generate_clouds(self):
+        """Create a cloud and place it"""
+        if len(self.clouds) < self.settings.cloud_limit:
+            new_cloud = Cloud(self)
+            self.clouds.add(new_cloud)
+    
+    def _update_clouds(self):
+        """Update position of clouds and get rid of old clouds"""
+        #Update Clouds position
+        self.clouds.update()
+        #Get rid of clouds that have disappeared
+        for cloud in self.clouds.copy():
+            if cloud.rect.x <= 0 - cloud.rect.width:
+                self.clouds.remove(cloud)
     
     def _fire_bullet(self):
         """Create a new bullet and add it to the bullet group."""
         if len(self.bullets) < self.settings.bullet_allowed:
             new_bullet = Bullet(self)
             self.bullets.add(new_bullet)
+        print(len(self.bullets))
     
     def _update_bullets(self):
         """Update position of bullets and get rid of old bullets."""
@@ -114,6 +133,8 @@ class AlienInvasion:
     def _update_screen(self):
         # Update images on the screen, and flipto the new screen
         self.screen.fill(self.settings.bg_color)
+        for cloud in self.clouds.sprites():
+            cloud.blitme()
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         self.ship.blitme()
